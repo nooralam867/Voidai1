@@ -1,3 +1,65 @@
+// URL Viewer Functions
+function loadWebsite() {
+    const urlInput = document.getElementById('urlInput');
+    const frame = document.getElementById('urlFrame');
+    const errorMsg = document.getElementById('errorMsg');
+
+    // Reset states
+    errorMsg.style.display = 'none';
+    frame.style.display = 'none';
+
+    // Get and validate URL
+    const userUrl = urlInput.value.trim();
+
+    try {
+        // Basic validation
+        if (!userUrl) {
+            throw new Error('Please enter a URL');
+        }
+
+        // Advanced validation using URL constructor
+        new URL(userUrl); // This will throw error for invalid URLs
+
+        // Show frame and load content
+        frame.src = userUrl;
+        frame.style.display = 'block';
+    } catch (error) {
+        errorMsg.textContent = error.message;
+        errorMsg.style.display = 'block';
+        urlInput.focus();
+    }
+}
+
+function convertToJPG() {
+    const frame = document.getElementById('urlFrame');
+    const frame1 = document.getElementById('urlFrame1');
+
+    // Use html2canvas to capture the content of the iframe
+    html2canvas(frame.contentDocument.body).then(canvas => {
+        // Convert canvas to JPG image
+        const imgData = canvas.toDataURL('image/jpeg');
+
+        // Create an image element and set its source to the JPG data
+        const img = new Image();
+        img.src = imgData;
+
+        // Clear the content of the second iframe and append the image
+        frame1.contentDocument.body.innerHTML = '';
+        frame1.contentDocument.body.appendChild(img);
+
+        // Show the second iframe
+        frame1.style.display = 'block';
+    });
+}
+
+// Allow Enter key to trigger the button
+document.getElementById('urlInput').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        loadWebsite();
+    }
+});
+
+// Chat Functions
 let prompt = document.querySelector("#prompt");
 let submitbtn = document.querySelector("#submit");
 let chatContainer = document.querySelector(".chat-container");
@@ -94,17 +156,16 @@ imageinput.addEventListener("change", () => {
     Array.from(files).forEach(file => {
         let reader = new FileReader();
         reader.onload = (e) => {
-    let base64string = e.target.result.split(",")[1];
-    user.files.push({
-        mime_type: file.type,
-        data: base64string
-    });
+            let base64string = e.target.result.split(",")[1];
+            user.files.push({
+                mime_type: file.type,
+                data: base64string
+            });
 
-    let previewImg = document.createElement("img");
-    previewImg.src = `data:${file.type};base64,${base64string}`;
-    previewImg.classList.add("preview"); // Use the "preview" class for small images
-    imagebtn.appendChild(previewImg); // Display the preview
-   
+            let previewImg = document.createElement("img");
+            previewImg.src = `data:${file.type};base64,${base64string}`;
+            previewImg.classList.add("preview"); // Use the "preview" class for small images
+            imagebtn.appendChild(previewImg); // Display the preview
         };
         reader.readAsDataURL(file);
     });
