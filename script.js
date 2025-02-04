@@ -64,7 +64,6 @@ let prompt = document.querySelector("#prompt");
 let submitbtn = document.querySelector("#submit");
 let chatContainer = document.querySelector(".chat-container");
 let imagebtn = document.querySelector("#image");
-let imageinput = document.querySelector("#image input");
 
 const Api_Url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyBacs-f252IdAP2qfK0Tja56BPI0jyZoeM";
 
@@ -146,31 +145,33 @@ submitbtn.addEventListener("click", () => {
     handlechatResponse(prompt.value);
 });
 
-imageinput.addEventListener("change", () => {
-    const files = imageinput.files;
-    if (!files.length) return;
-
-    user.files = []; // Reset files array
-    imagebtn.querySelectorAll("img.preview").forEach(img => img.remove()); // Clear previous previews
-
-    Array.from(files).forEach(file => {
-        let reader = new FileReader();
-        reader.onload = (e) => {
-            let base64string = e.target.result.split(",")[1];
-            user.files.push({
-                mime_type: file.type,
-                data: base64string
-            });
-
-            let previewImg = document.createElement("img");
-            previewImg.src = `data:${file.type};base64,${base64string}`;
-            previewImg.classList.add("preview"); // Use the "preview" class for small images
-            imagebtn.appendChild(previewImg); // Display the preview
-        };
-        reader.readAsDataURL(file);
-    });
-});
-
 imagebtn.addEventListener("click", () => {
-    imageinput.click();
+    const frame1 = document.getElementById('urlFrame1');
+    const img = frame1.contentDocument.body.querySelector('img');
+
+    if (img) {
+        // Convert the image to a base64 string
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0, img.width, img.height);
+
+        const imgData = canvas.toDataURL('image/jpeg').split(',')[1];
+
+        // Add the image to the user.files array
+        user.files = [{
+            mime_type: 'image/jpeg',
+            data: imgData
+        }];
+
+        // Display a preview of the image
+        imagebtn.querySelectorAll("img.preview").forEach(preview => preview.remove()); // Clear previous previews
+        const previewImg = document.createElement('img');
+        previewImg.src = `data:image/jpeg;base64,${imgData}`;
+        previewImg.classList.add('preview');
+        imagebtn.appendChild(previewImg);
+    } else {
+        alert('No image found in the JPG Viewer. Please convert a website to JPG first.');
+    }
 });
